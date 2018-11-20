@@ -25,7 +25,16 @@
     projector = new THREE.Projector();
 
     var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    var material = new THREE.MeshNormalMaterial();
+
+    var materialArray = [];
+    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/1.png' ) }));
+    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/2.png' ) }));
+    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/3.png' ) }));
+    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/4.png' ) }));
+    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/5.png' ) }));
+    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/6.png' ) }));
+
+    var material = new THREE.MeshFaceMaterial(materialArray);
     var cube = new THREE.Mesh( geometry, material );
     scene.add( cube );
     camera.position.z = 5;
@@ -70,21 +79,21 @@
         // create an array containing all objects in the scene with which the ray intersects
         var intersects = ray.intersectObjects( targetList );
 
-        console.log(intersects);
-
         // if there is one (or more) intersections
         if ( intersects.length > 0 )
         {
-            console.log("Hit @ " + toString( intersects[0].point ) );
-            // change the color of the closest face.
-            intersects[ 0 ].face.color.setRGB( 0.8 * Math.random() + 0.2, 0, 0 );
-            intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
+            // console.log("Hit @ " + toString( intersects[0].point ) );
             mine = intersects[0];
+            console.log(mine.face.materialIndex+1);
+
+            // // change the color of the closest face.
+            // intersects[ 0 ].face.color.setRGB( 0.8 * Math.random() + 0.2, 0, 0 );
+            // intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
         }
 
     }
 
-    document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+    document.addEventListener( 'click', onDocumentMouseDown, false );
 
 </script>
 </body>
