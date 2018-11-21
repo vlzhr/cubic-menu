@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>tEST</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
         html, body { margin: 0; padding: 0; overflow: hidden; }
     </style>
@@ -12,88 +13,88 @@
 <script src="OrbitControls.js"></script>
 <script src="js/renderers/Projector.js"></script>
 <script>
-    var mine;
-    var scene = new THREE.Scene();
-    var aspect = window.innerWidth / window.innerHeight;
-    var camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000 );
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
-
-    var targetList = [];
-    var projector, mouse = { x: 0, y: 0 };
-    projector = new THREE.Projector();
-
-    var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-
-    var materialArray = [];
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/1.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/2.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/3.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/4.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/5.png' ) }));
-    materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/6.png' ) }));
-
-    var material = new THREE.MeshFaceMaterial(materialArray);
-    var cube = new THREE.Mesh( geometry, material );
-    scene.add( cube );
-    camera.position.z = 5;
-
-    targetList.push(cube);
-
-    document.addEventListener("DOMContentLoaded", function() {
-
-        controls = new THREE.OrbitControls( camera );
-
-        var render = function () {
-            requestAnimationFrame( render );
-            controls.update();
-            renderer.render( scene, camera );
-        };
-
-        render();
-    });
-
-    function onDocumentMouseDown( event )
-    {
-        // the following line would stop any other event handler from firing
-        // (such as the mouse's TrackballControls)
-        // event.preventDefault();
-
-        console.log("Click.");
-
-        // update the mouse variable
-        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-        // find intersections
-
-        // create a Ray with origin at the mouse position
-        //   and direction into the scene (camera direction)
-        var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-        // projector.unprojectVector( vector, camera );
-        vector.unproject( camera );
-
-        var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
-
-        // create an array containing all objects in the scene with which the ray intersects
-        var intersects = ray.intersectObjects( targetList );
-
-        // if there is one (or more) intersections
-        if ( intersects.length > 0 )
-        {
-            // console.log("Hit @ " + toString( intersects[0].point ) );
-            mine = intersects[0];
-            console.log(mine.face.materialIndex+1);
-
-            // // change the color of the closest face.
-            // intersects[ 0 ].face.color.setRGB( 0.8 * Math.random() + 0.2, 0, 0 );
-            // intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
-        }
-
+    function sideChangeHandler(n) {
+        console.log(n+1);
     }
 
-    document.addEventListener( 'click', onDocumentMouseDown, false );
+    function Plot() {
+        this.frontSide = 5;
+        this.width = 300; // window.innerWidth;
+        this.height = 200; // window.innerHeight;
+        this.scene = new THREE.Scene();
+        var aspect = this.width / this.height;
+        this.camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000 );
+        this.controls = new THREE.OrbitControls( this.camera );
+
+        this.renderer = new THREE.WebGLRenderer();
+        this.scene.background = new THREE.Color("");
+
+        this.renderer.setSize(this.width, this.height);
+        document.body.appendChild(this.renderer.domElement);
+
+        this.run = () => {
+            var render = () => {
+                window.setTimeout(() => {
+                    var cubeFront = projector.checkCubeFront();
+                    if (cubeFront !== -1 && cubeFront !== this.frontSide) {
+                        this.frontSide = cubeFront;
+                        sideChangeHandler(cubeFront-1);
+                    }
+
+                    requestAnimationFrame( render );
+                    this.controls.update();
+                    this.renderer.render( this.scene, this.camera );
+                }, 70);
+            };
+
+            render();
+        }
+    }
+    var plot = new Plot();
+
+    function Cube() {
+        var geometry = new THREE.BoxGeometry( 1,1,1 );
+
+        var materialArray = [];
+        materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/1.png' ) }));
+        materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/2.png' ) }));
+        materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/3.png' ) }));
+        materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/4.png' ) }));
+        materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/avatar.png' ) }));
+        materialArray.push(new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'images/6.png' ) }));
+
+        var material = new THREE.MeshFaceMaterial(materialArray);
+        this.node = new THREE.Mesh( geometry, material );
+        this.node.scale.set( 6,6,6 );
+        plot.scene.add( this.node );
+        plot.camera.position.z = 10;
+    }
+    var cube = new Cube();
+    var targetList = [];
+    targetList.push(cube);
+
+    function Projector() {
+        this.mouse = {x: 0, y: 0};
+
+        this.checkCubeFront = () => {
+            this.node = new THREE.Projector();
+            var vector = new THREE.Vector3( this.mouse.x, this.mouse.y, 1 );
+            vector.unproject( plot.camera );
+            this.ray = new THREE.Raycaster( plot.camera.position, vector.sub( plot.camera.position ).normalize() );
+            try {
+                return this.ray.intersectObjects( [cube.node] )[0].face.materialIndex+1;
+            } catch (e) {
+                return -1;
+            }
+        }
+    }
+    var projector = new Projector();
+
+
+    plot.run();
+
+
+
 
 </script>
 </body>
